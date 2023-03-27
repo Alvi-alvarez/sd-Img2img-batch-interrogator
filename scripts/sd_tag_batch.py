@@ -1,5 +1,4 @@
 import gradio as gr
-import torch
 from modules import scripts, devices, lowvram, shared
 from clip_interrogator import Config, Interrogator
 from modules.processing import process_images
@@ -28,21 +27,20 @@ class Script(scripts.Script):
     def ui(self, is_img2img):
         with gr.Blocks():
             in_front = gr.Checkbox(label="Prompt in front")
-            mode = gr.Dropdown(
-                ["classic", "fast"], label="mode", value="classic"
-            )
+            prompt_weight = gr.Slider(0.0, 3.0, value=1.0, label="weight")
+            mode = gr.Dropdown(["classic", "fast"], label="mode", value="classic")
             btn = gr.Button(value="unload models")
             btn.click(unload)
-            return [in_front, mode]
+            return [in_front, mode, prompt_weight]
 
-    def run(self, p, in_front, mode):
+    def run(self, p, in_front, mode, prompt_weight):
         global ci
         if ci is None:
             config = Config(
                 device=devices.get_optimal_device(),
-                cache_path='models/clip-interrogator',
+                cache_path="models/clip-interrogator",
                 clip_model_name="ViT-L-14/openai",
-                caption_model_name="blip-base"
+                caption_model_name="blip-base",
             )
             ci = Interrogator(config)
         try:
@@ -54,9 +52,9 @@ class Script(scripts.Script):
             elif mode == "fast":
                 prompt = ci.interrogate_fast(p.init_images[0])
             if in_front:
-                p.prompt = f"{p.prompt}, {prompt}"
+                p.prompt = f"{p.prompt}, ({prompt}:{prompt_weight})"
             else:
-                p.prompt = f"{prompt}, {p.prompt}"
+                p.prompt = f"({prompt}:{prompt_weight}), {p.prompt}"
             print(prompt)
         except RuntimeError as e:
             print(e)
