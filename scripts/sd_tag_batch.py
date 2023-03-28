@@ -24,9 +24,14 @@ class Script(scripts.Script):
             prompt = deepbooru.model.tag(p.init_images[0])
         else:
             prompt = shared.interrogator.interrogate(p.init_images[0])
-        if in_front:
+        print(p.prompt)
+
+        if p.prompt == "":
+            p.prompt = prompt
+        elif in_front:
             p.prompt = f"{p.prompt}, ({prompt}:{prompt_weight})"
         else:
             p.prompt = f"({prompt}:{prompt_weight}), {p.prompt}"
+
         print(f"Prompt: {p.prompt}")
         return process_images(p)
