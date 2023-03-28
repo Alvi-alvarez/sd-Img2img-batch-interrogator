@@ -25,13 +25,14 @@ class Script(scripts.Script):
         return is_img2img
 
     def ui(self, is_img2img):
-        with gr.Blocks():
-            in_front = gr.Checkbox(label="Prompt in front")
-            prompt_weight = gr.Slider(0.0, 3.0, value=1.0, label="weight")
-            mode = gr.Dropdown(["classic", "fast"], label="mode", value="classic")
-            btn = gr.Button(value="unload models")
-            btn.click(unload)
-            return [in_front, mode, prompt_weight]
+        in_front = gr.Checkbox(label="Prompt in front")
+        prompt_weight = gr.Slider(
+            0.0, 3.0, value=1.0, step=0.1, label="interrogator weight"
+        )
+        mode = gr.Dropdown(["classic", "fast"], label="mode", value="classic")
+        btn = gr.Button(value="unload models")
+        btn.click(unload)
+        return [in_front, mode, prompt_weight]
 
     def run(self, p, in_front, mode, prompt_weight):
         global ci
