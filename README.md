@@ -3,4 +3,4 @@
 ![](Captura.PNG)
 
 # To Do
-- [ ] Use native A1111 interrogator
+- [x] Use native A1111 interrogator
