@@ -27,7 +27,7 @@ class Script(scripts.Script):
     def ui(self, is_img2img):
         in_front = gr.Checkbox(label="Prompt in front")
         prompt_weight = gr.Slider(
-            0.0, 3.0, value=1.0, step=0.1, label="interrogator weight"
+            0.0, 1.0, value=0.5, step=0.1, label="interrogator weight"
         )
         mode = gr.Dropdown(["classic", "fast"], label="mode", value="classic")
         btn = gr.Button(value="unload models")
