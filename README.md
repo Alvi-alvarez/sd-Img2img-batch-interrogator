@@ -1,1 +1,1 @@
-# sd-Img2img-batch-interrogator
+# Img2img batch interrogator for A1111
