@@ -16,11 +16,11 @@ class Script(scripts.Script):
         return is_img2img
 
     def ui(self, is_img2img):
-        in_front = gr.Checkbox(label="Prompt in front")
+        in_front = gr.Checkbox(label="Prompt in front", value=True)
         prompt_weight = gr.Slider(
             0.0, 1.0, value=0.5, step=0.1, label="interrogator weight"
         )
-        use_deepbooru = gr.Checkbox(label="Use deepbooru")
+        use_deepbooru = gr.Checkbox(label="Use deepbooru", value=True)
         return [in_front, prompt_weight, use_deepbooru]
     
     def run(self, p, in_front, prompt_weight, use_deepbooru):
@@ -30,16 +30,15 @@ class Script(scripts.Script):
             _check = f"{Script.orginal_prompt}, ({Script.interrogator}:{prompt_weight})"
         else:
             _check = f"({Script.interrogator}:{prompt_weight}), {Script.orginal_prompt}"
-        if p.prompt != _check:
+
+        if p.prompt not in [_check, Script.interrogator]:
             Script.orginal_prompt = p.prompt
-        
 
         if use_deepbooru:
             prompt = deepbooru.model.tag(p.init_images[0])
         else:
             prompt = shared.interrogator.interrogate(p.init_images[0])
         Script.interrogator = prompt
-
 
         p.prompt = ""
         if Script.orginal_prompt in ["Some", ""]:
