@@ -4,6 +4,11 @@ from modules.processing import process_images
 
 
 class Script(scripts.Script):
+    
+    # :|
+    orginal_prompt = "Some"
+    interrogator = "Ramdom text"
+    
     def title(self):
         return "Img2img batch interrogator"
 
@@ -17,21 +22,32 @@ class Script(scripts.Script):
         )
         use_deepbooru = gr.Checkbox(label="Use deepbooru")
         return [in_front, prompt_weight, use_deepbooru]
-
+    
     def run(self, p, in_front, prompt_weight, use_deepbooru):
-        prompt = ""
+        
+        # :|
+        if in_front:
+            _check = f"{Script.orginal_prompt}, ({Script.interrogator}:{prompt_weight})"
+        else:
+            _check = f"({Script.interrogator}:{prompt_weight}), {Script.orginal_prompt}"
+        if p.prompt != _check:
+            Script.orginal_prompt = p.prompt
+        
+
         if use_deepbooru:
             prompt = deepbooru.model.tag(p.init_images[0])
         else:
             prompt = shared.interrogator.interrogate(p.init_images[0])
-        print(p.prompt)
+        Script.interrogator = prompt
 
-        if p.prompt == "":
-            p.prompt = prompt
+
+        p.prompt = ""
+        if Script.orginal_prompt in ["Some", ""]:
+            p.prompt = Script.interrogator
         elif in_front:
-            p.prompt = f"{p.prompt}, ({prompt}:{prompt_weight})"
+            p.prompt = f"{Script.orginal_prompt}, ({Script.interrogator}:{prompt_weight})"
         else:
-            p.prompt = f"({prompt}:{prompt_weight}), {p.prompt}"
+            p.prompt = f"({Script.interrogator}:{prompt_weight}), {Script.orginal_prompt}"
 
         print(f"Prompt: {p.prompt}")
         return process_images(p)
