@@ -89,7 +89,8 @@ class Script(scripts.Script):
             interrogator = self.filter_words(interrogator, raw_prompt)
         # Remove negative prompt content from interrogator prompt
         if use_negatives:
-            interrogator = self.filter_words(interrogator, p.negative_prompt)
+            raw_negative = p.negative_prompt
+            interrogator = self.filter_words(interrogator, raw_negative)
 
         if use_weight:
             if p.prompt == "":
