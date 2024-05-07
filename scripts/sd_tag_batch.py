@@ -1,19 +1,18 @@
 import gradio as gr
-import unicodedata
 from modules import scripts, deepbooru
 from modules.processing import process_images
 import modules.shared as shared
 
 
-def remove_accents(input_str):
-    nfkd_form = unicodedata.normalize('NFKD', input_str)
-    return u"".join(c for c in nfkd_form if not unicodedata.combining(c))
+"""
+
+Thanks to Mathias Russ.
+Thanks to RookHyena.
+
+"""
 
 
 class Script(scripts.Script):
-    # :|
-    original_prompt = "Some"
-    interrogator = "Random text"
 
     def title(self):
         return "Img2img batch interrogator"
@@ -31,31 +30,28 @@ class Script(scripts.Script):
 
     def run(self, p, in_front, prompt_weight, use_deepbooru):
 
-        # :|
-        if in_front:
-            _check = f"{Script.original_prompt}, ({Script.interrogator}:{prompt_weight})"
-        else:
-            _check = f"({Script.interrogator}:{prompt_weight}), {Script.original_prompt}"
-
-        if p.prompt not in [_check, Script.interrogator]:
-            Script.original_prompt = remove_accents(p.prompt)
+        raw_prompt = p.prompt
 
         # fix alpha channel
-        p.init_images[0] = p.init_images[0].convert('RGB')
+        p.init_images[0] = p.init_images[0].convert("RGB")
 
         if use_deepbooru:
-            prompt = deepbooru.model.tag(p.init_images[0])
+            interrogator = deepbooru.model.tag(p.init_images[0])
         else:
-            prompt = shared.interrogator.interrogate(p.init_images[0])
-        Script.interrogator = prompt
+            interrogator = shared.interrogator.interrogate(p.init_images[0])
 
-        p.prompt = ""
-        if Script.original_prompt in ["Some", ""]:
-            p.prompt = Script.interrogator
+        if p.prompt == "":
+            p.prompt = interrogator
         elif in_front:
-            p.prompt = f"{Script.original_prompt}, ({Script.interrogator}:{prompt_weight})"
+            p.prompt = f"{p.prompt}, ({interrogator}:{prompt_weight})"
         else:
-            p.prompt = f"({Script.interrogator}:{prompt_weight}), {Script.original_prompt}"
+            p.prompt = f"({interrogator}:{prompt_weight}), {p.prompt}"
 
         print(f"Prompt: {p.prompt}")
-        return process_images(p)
+
+        processed = process_images(p)
+
+        # Restore the UI elements we modified
+        p.prompt = raw_prompt
+
+        return processed
