@@ -26,10 +26,11 @@ class Script(scripts.Script):
         prompt_weight = gr.Slider(
             0.0, 1.0, value=0.5, step=0.1, label="interrogator weight"
         )
+        use_weight = gr.Checkbox(label="Use Weighted Prompt", value=True)
         use_deepbooru = gr.Checkbox(label="Use deepbooru", value=True)
-        return [in_front, prompt_weight, use_deepbooru]
+        return [in_front, prompt_weight, use_deepbooru, use_weight]
 
-    def run(self, p, in_front, prompt_weight, use_deepbooru):
+    def run(self, p, in_front, prompt_weight, use_deepbooru, use_weight):
 
         # :|
         if in_front:
@@ -50,12 +51,20 @@ class Script(scripts.Script):
         Script.interrogator = prompt
 
         p.prompt = ""
-        if Script.original_prompt in ["Some", ""]:
-            p.prompt = Script.interrogator
-        elif in_front:
-            p.prompt = f"{Script.original_prompt}, ({Script.interrogator}:{prompt_weight})"
+        if use_weight:
+            if Script.original_prompt in ["Some", ""]:
+                p.prompt = Script.interrogator
+            elif in_front:
+                p.prompt = f"{Script.original_prompt}, ({Script.interrogator}:{prompt_weight})"
+            else:
+                p.prompt = f"({Script.interrogator}:{prompt_weight}), {Script.original_prompt}"
         else:
-            p.prompt = f"({Script.interrogator}:{prompt_weight}), {Script.original_prompt}"
+            if Script.original_prompt in ["Some", ""]:
+                p.prompt = Script.interrogator
+            elif in_front:
+                p.prompt = f"{Script.original_prompt}, {Script.interrogator}"
+            else:
+                p.prompt = f"{Script.interrogator}, {Script.original_prompt}"
 
         print(f"Prompt: {p.prompt}")
         return process_images(p)
