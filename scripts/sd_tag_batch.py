@@ -25,10 +25,11 @@ class Script(scripts.Script):
         prompt_weight = gr.Slider(
             0.0, 1.0, value=0.5, step=0.1, label="interrogator weight"
         )
+        use_weight = gr.Checkbox(label="Use Weighted Prompt", value=True)
         use_deepbooru = gr.Checkbox(label="Use deepbooru", value=True)
-        return [in_front, prompt_weight, use_deepbooru]
+        return [in_front, prompt_weight, use_deepbooru, use_weight]
 
-    def run(self, p, in_front, prompt_weight, use_deepbooru):
+    def run(self, p, in_front, prompt_weight, use_deepbooru, use_weight):
 
         raw_prompt = p.prompt
 
@@ -40,12 +41,20 @@ class Script(scripts.Script):
         else:
             interrogator = shared.interrogator.interrogate(p.init_images[0])
 
-        if p.prompt == "":
-            p.prompt = interrogator
-        elif in_front:
-            p.prompt = f"{p.prompt}, ({interrogator}:{prompt_weight})"
+        if use_weight:
+            if p.prompt == "":
+                p.prompt = Script.interrogator
+            elif in_front:
+                p.prompt = f"{p.prompt}, ({interrogator}:{prompt_weight})"
+            else:
+                p.prompt = f"({interrogator}:{prompt_weight}), {p.prompt}"
         else:
-            p.prompt = f"({interrogator}:{prompt_weight}), {p.prompt}"
+            if p.prompt == "":
+                p.prompt = Script.interrogator
+            elif in_front:
+                p.prompt = f"{p.prompt}, {interrogator}"
+            else:
+                p.prompt = f"{interrogator}, {p.prompt}"
 
         print(f"Prompt: {p.prompt}")
 
