@@ -28,8 +28,9 @@ class Script(scripts.Script):
         )
         use_weight = gr.Checkbox(label="Use Weighted Prompt", value=True)
         use_deepbooru = gr.Checkbox(label="Use deepbooru", value=True)
-        no_duplicates = gr.Checkbox(label="Filter Duplicate Prompt Content from Interrogation", value=False)
-        use_negatives = gr.Checkbox(label="Filter Negative Prompt Content from Interrogation", value=False)
+        with gr.Accordion("Deepbooru tools:"):
+            no_duplicates = gr.Checkbox(label="Filter Duplicate Prompt Content from Interrogation", value=False)
+            use_negatives = gr.Checkbox(label="Filter Negative Prompt Content from Interrogation", value=False)
         return [in_front, prompt_weight, use_deepbooru, use_weight, no_duplicates, use_negatives]
 
     # Required to parse information from a string that is between () or has :##.## suffix
