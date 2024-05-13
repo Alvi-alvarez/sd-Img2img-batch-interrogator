@@ -27,11 +27,15 @@ class Script(scripts.Script):
             0.0, 1.0, value=0.5, step=0.1, label="interrogator weight"
         )
         use_weight = gr.Checkbox(label="Use Weighted Prompt", value=True)
-        use_deepbooru = gr.Checkbox(label="Use deepbooru", value=True)
+        
+        model_options = ["CLIP", "Deepbooru"]
+        model_selection = gr.Dropdown(choices=model_options, label="Select Interrogation Model(s)", multiselect=True, value="Deepbooru")
+        
         with gr.Accordion("Deepbooru tools:"):
             no_duplicates = gr.Checkbox(label="Filter Duplicate Prompt Content from Interrogation", value=False)
             use_negatives = gr.Checkbox(label="Filter Negative Prompt Content from Interrogation", value=False)
-        return [in_front, prompt_weight, use_deepbooru, use_weight, no_duplicates, use_negatives]
+        return [in_front, prompt_weight, model_selection, use_weight, no_duplicates, use_negatives]
+
 
     # Required to parse information from a string that is between () or has :##.## suffix
     def remove_attention(self, words):
@@ -72,19 +76,26 @@ class Script(scripts.Script):
         
         return filtered_prompt
 
-    def run(self, p, in_front, prompt_weight, use_deepbooru, use_weight, no_duplicates, use_negatives):
+    def run(self, p, in_front, prompt_weight, model_selection, use_weight, no_duplicates, use_negatives):
 
         raw_prompt = p.prompt
         interrogator = ""
 
         # fix alpha channel
         p.init_images[0] = p.init_images[0].convert("RGB")
-
-        if use_deepbooru:
-            interrogator = deepbooru.model.tag(p.init_images[0])
-        else:
-            interrogator = shared.interrogator.interrogate(p.init_images[0])
         
+        first = True # Two interrogator concatination correction boolean
+        for model in model_selection:
+            # This prevents two interrogators from being incorrectly concatinated
+            if first == False:
+                interrogator += ", "
+            first = False
+            # Should add the interrogators in the order determined by the model_selection list
+            if model == "Deepbooru":
+                interrogator += deepbooru.model.tag(p.init_images[0])
+            elif model == "CLIP":
+                interrogator += shared.interrogator.interrogate(p.init_images[0])
+       
         # Remove duplicate prompt content from interrogator prompt
         if no_duplicates:
             interrogator = self.filter_words(interrogator, raw_prompt)
