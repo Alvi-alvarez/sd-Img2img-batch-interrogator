@@ -97,7 +97,7 @@ class Script(scripts.Script):
         
         return filtered_prompt
 
-    def run(self, p, in_front, prompt_weight, model_selection, use_weight, no_duplicates, use_negatives):
+    def run(self, p, in_front, prompt_weight, model_selection, use_weight, no_duplicates, use_negatives, use_custom_filter, custom_filter):
 
         raw_prompt = p.prompt
         interrogator = ""
