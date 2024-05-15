@@ -128,3 +128,4 @@ dmypy.json
 # Pyre type checker
 .pyre/
 %ia%stable-diffusion-webui%extensions%sd-Img2img-batch-interrogator/chat_history/history.sqlite
+*.txt
