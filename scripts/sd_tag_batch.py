@@ -3,12 +3,12 @@ import re #For remove_attention regular expressions
 from modules import scripts, deepbooru
 from modules.processing import process_images
 import modules.shared as shared
-
+import os # Used for saving previous custom prompt
 
 """
 
 Thanks to Mathias Russ.
-Thanks to RookHyena.
+Thanks to Smirking Kitsune.
 
 """
 
@@ -21,20 +21,41 @@ class Script(scripts.Script):
     def show(self, is_img2img):
         return is_img2img
 
+    def b_clicked(o):
+        return gr.Button.update(interactive=True)
+    
     def ui(self, is_img2img):
-        in_front = gr.Checkbox(label="Prompt in front", value=True)
-        prompt_weight = gr.Slider(
-            0.0, 1.0, value=0.5, step=0.1, label="interrogator weight"
-        )
-        use_weight = gr.Checkbox(label="Use Weighted Prompt", value=True)
-        
+        # Function to load custom filter from file
+        def load_custom_filter(custom_filter):
+            with open("extensions\sd-Img2img-batch-interrogator\custom_filter.txt", "r") as file:
+                custom_filter = file.read()
+                return custom_filter
+
         model_options = ["CLIP", "Deepbooru"]
         model_selection = gr.Dropdown(choices=model_options, label="Select Interrogation Model(s)", multiselect=True, value="Deepbooru")
         
-        with gr.Accordion("Deepbooru tools:"):
+        in_front = gr.Checkbox(label="Prompt in front", value=True)
+        use_weight = gr.Checkbox(label="Use Interrogator Prompt Weight", value=True)
+        prompt_weight = gr.Slider(
+            0.0, 1.0, value=0.5, step=0.1, label="Interrogator Prompt Weight"
+        )
+        
+        with gr.Accordion("Filtering tools:"):
             no_duplicates = gr.Checkbox(label="Filter Duplicate Prompt Content from Interrogation", value=False)
             use_negatives = gr.Checkbox(label="Filter Negative Prompt Content from Interrogation", value=False)
-        return [in_front, prompt_weight, model_selection, use_weight, no_duplicates, use_negatives]
+            use_custom_filter = gr.Checkbox(label="Filter Custom Prompt Content from Interrogation", value=False)
+            custom_filter = gr.Textbox(
+                label="Custom Filter Prompt", 
+                placeholder="Prompt content seperated by commas. Warning ignores attention syntax, parentheses '()' and colon suffix ':XX.XX' are discarded.", 
+                show_copy_button=True
+            )
+            # Button to load custom filter from file
+            load_custom_filter_button = gr.Button(value="Load Last Custom Filter")
+            
+        # Listeners
+        load_custom_filter_button.click(load_custom_filter, inputs=custom_filter, outputs=custom_filter)
+        
+        return [in_front, prompt_weight, model_selection, use_weight, no_duplicates, use_negatives, use_custom_filter, custom_filter]
 
 
     # Required to parse information from a string that is between () or has :##.## suffix
@@ -76,7 +97,7 @@ class Script(scripts.Script):
         
         return filtered_prompt
 
-    def run(self, p, in_front, prompt_weight, model_selection, use_weight, no_duplicates, use_negatives):
+    def run(self, p, in_front, prompt_weight, model_selection, use_weight, no_duplicates, use_negatives, use_custom_filter, custom_filter):
 
         raw_prompt = p.prompt
         interrogator = ""
@@ -101,8 +122,13 @@ class Script(scripts.Script):
             interrogator = self.filter_words(interrogator, raw_prompt)
         # Remove negative prompt content from interrogator prompt
         if use_negatives:
-            raw_negative = p.negative_prompt
-            interrogator = self.filter_words(interrogator, raw_negative)
+            interrogator = self.filter_words(interrogator, p.negative_prompt)
+        # Remove custom prompt content from interrogator prompt
+        if use_custom_filter:
+            interrogator = self.filter_words(interrogator, custom_filter)
+            # Save custom filter to text file
+            with open("extensions\sd-Img2img-batch-interrogator\custom_filter.txt", "w") as file:
+                file.write(custom_filter)
 
         if use_weight:
             if p.prompt == "":
