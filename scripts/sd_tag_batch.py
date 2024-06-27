@@ -1,13 +1,12 @@
 import gradio as gr
-import re  # For remove_attention regular expressions
+import re
 from modules import scripts, deepbooru
 from modules.processing import process_images
 import modules.shared as shared
-import os  # Used for saving previous custom prompt
+import os
 import requests
 from io import BytesIO
 import base64
-import json
 from modules import script_callbacks
 
 """
@@ -31,9 +30,8 @@ class Script(scripts.Script):
             return cls.server_address
         
         # Fallback to the brute force method if server_address is not set
-        # Initial testing indicates that fallback method will never be used...
+        # Initial testing indicates that fallback method might not be needed...
         print("Server address not set. Falling back to brute force method.")
-        # Fallback is highly inefficient and in some cases slow (especially if expected port is far from default)
         ports = range(7860, 7960) # Gradio will increment port 100 times if default and subsequent desired ports are unavailable. 
         for port in ports:
             url = f"http://127.0.0.1:{port}/"
@@ -360,7 +358,7 @@ class Script(scripts.Script):
             }
             api_address = f"{self.get_server_address()}tagger/v1/interrogate"
             # WARNING: Removing `timeout` could result in a frozen client if the queue_lock is locked. If you need more time add more time, do not remove or risk DEADLOCK.
-            # Note: If WD Tagger did not load a model, it is likely that WD Tagger specifically queue_lock (FIFOLock) is concerned with your system's threading and thinks running could cause processes starvation...
+            # Note: If WD Tagger did not load a model, it is likely that WD Tagger specifically queue_lock (FIFOLock) is concerned with your system's threading and thinks running could cause process starvation...
             response = requests.post(api_address, json=payload, timeout=120) 
             response.raise_for_status()
             result = response.json()
