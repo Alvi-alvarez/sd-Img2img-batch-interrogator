@@ -1,9 +1,5 @@
 import gradio as gr
 import re
-import os
-import requests
-from io import BytesIO
-import base64
 from modules import scripts, deepbooru, script_callbacks, shared
 from modules.processing import process_images
 import sys
@@ -122,9 +118,12 @@ class Script(scripts.Script):
         return []
 
     def unload_wd_models(self):
+        unloaded_models = 0
         if self.wd_ext_utils is not None:
             for interrogator in self.wd_ext_utils.interrogators.values():
-                interrogator.unload()
+                if interrogator.unload(): 
+                    unloaded_models = unloaded_models + 1
+            print(f"Unloaded {unloaded_models} of WD Extension's Model(s).")
 
     def unload_clip_models(self):
         if self.clip_ext is not None:
@@ -176,7 +175,7 @@ class Script(scripts.Script):
             # WD EXT Options
             wd_ext_accordion = gr.Accordion("WD EXT Options:", open=False, visible=False)
             with wd_ext_accordion:
-                wd_ext_model = gr.Dropdown(choices=[], value='wd-swinv2-tagger.v3', label="WD EXT Model", multiselect=True)
+                wd_ext_model = gr.Dropdown(choices=[], value='wd-v1-4-moat-tagger.v2', label="WD EXT Model", multiselect=True)
                 wd_threshold = gr.Slider(0.0, 1.0, value=0.35, step=0.01, label="Threshold")
                 wd_underscore_fix = gr.Checkbox(label="Remove Underscores from Tags", value=True)
                 unload_wd_models_afterwords = gr.Checkbox(label="Unload WD Model After Use", value=True)
@@ -247,7 +246,7 @@ class Script(scripts.Script):
 
     def run(self, p, in_front, prompt_weight, model_selection, use_weight, no_duplicates, use_negatives, use_custom_filter, custom_filter, clip_ext_model, clip_ext_mode, wd_ext_model, wd_threshold, wd_underscore_fix, unload_clip_models_afterwords, unload_wd_models_afterwords):
         raw_prompt = p.prompt
-        interrogator = ""
+        interrogation = ""
         
         # fix alpha channel
         p.init_images[0] = p.init_images[0].convert("RGB")
@@ -255,57 +254,57 @@ class Script(scripts.Script):
         for model in model_selection:
             # Should add the interrogators in the order determined by the model_selection list
             if model == "Deepbooru (Native)":
-                interrogator += deepbooru.model.tag(p.init_images[0]) + ", "
+                interrogation += deepbooru.model.tag(p.init_images[0]) + ", "
             elif model == "CLIP (Native)":
-                interrogator += shared.interrogator.interrogate(p.init_images[0]) + ", "
+                interrogation += shared.interrogator.interrogate(p.init_images[0]) + ", "
             elif model == "CLIP (EXT)":
                 if self.clip_ext is not None:
                     for clip_model in clip_ext_model:
-                        interrogator += self.clip_ext.image_to_prompt(p.init_images[0], clip_ext_mode, clip_model) + ", "
+                        interrogation += self.clip_ext.image_to_prompt(p.init_images[0], clip_ext_mode, clip_model) + ", "
                     if unload_clip_models_afterwords:
                         self.clip_ext.unload()
             elif model == "WD (EXT)":
                 if self.wd_ext_utils is not None:
                     for wd_model in wd_ext_model:
-                        interrogator = self.wd_ext_utils.interrogators[wd_model]
-                        rating, tags = interrogator.interrogate(p.init_images[0])
+                        rating, tags = self.wd_ext_utils.interrogators[wd_model].interrogate(p.init_images[0])
                         tags_list = [tag for tag, conf in tags.items() if conf > wd_threshold]
                         if wd_underscore_fix:
                             tags_spaced = [tag.replace('_', ' ') for tag in tags_list]
-                            interrogator += ", ".join(tags_spaced) + ", "
+                            interrogation += ", ".join(tags_spaced) 
                         else:
-                            interrogator += ", ".join(tags_list) + ", "
+                            interrogation += ", ".join(tags_list) 
+                        interrogation += ", "
                         if unload_wd_models_afterwords:
-                            self.wd_ext_utils.interrogators[wd_ext_model].unload()
+                            self.wd_ext_utils.interrogators[wd_model].unload()
 
         
         # Remove duplicate prompt content from interrogator prompt
         if no_duplicates:
-            interrogator = self.filter_words(interrogator, raw_prompt)
+            interrogation = self.filter_words(interrogation, raw_prompt)
         # Remove negative prompt content from interrogator prompt
         if use_negatives:
-            interrogator = self.filter_words(interrogator, p.negative_prompt)
+            interrogation = self.filter_words(interrogation, p.negative_prompt)
         # Remove custom prompt content from interrogator prompt
         if use_custom_filter:
-            interrogator = self.filter_words(interrogator, custom_filter)
+            interrogation = self.filter_words(interrogation, custom_filter)
             # Save custom filter to text file
             with open("extensions/sd-Img2img-batch-interrogator/custom_filter.txt", "w") as file:
                 file.write(custom_filter)
         
         if use_weight:
             if p.prompt == "":
-                p.prompt = interrogator
+                p.prompt = interrogation
             elif in_front == "Append to prompt":
-                p.prompt = f"{p.prompt}, ({interrogator}:{prompt_weight})"
+                p.prompt = f"{p.prompt}, ({interrogation}:{prompt_weight})"
             else:
-                p.prompt = f"({interrogator}:{prompt_weight}), {p.prompt}"
+                p.prompt = f"({interrogation}:{prompt_weight}), {p.prompt}"
         else:
             if p.prompt == "":
-                p.prompt = interrogator
+                p.prompt = interrogation
             elif in_front == "Append to prompt":
-                p.prompt = f"{p.prompt}, {interrogator}"
+                p.prompt = f"{p.prompt}, {interrogation}"
             else:
-                p.prompt = f"{interrogator}, {p.prompt}"
+                p.prompt = f"{interrogation}, {p.prompt}"
         
         print(f"Prompt: {p.prompt}")
         
