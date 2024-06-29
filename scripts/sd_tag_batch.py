@@ -280,15 +280,24 @@ class Script(scripts.Script):
         for model in model_selection:
             # Should add the interrogators in the order determined by the model_selection list
             if model == "Deepbooru (Native)":
-                preliminary_interrogation = deepbooru.model.tag(p.init_images[0]) + ", "
+                preliminary_interrogation = deepbooru.model.tag(p.init_images[0]) 
+                # Filter prevents overexaggeration of tags due to interrogation models having similar results 
+                preliminary_interrogation = self.filter_words(preliminary_interrogation, interrogation) + ", "
+                interrogation += preliminary_interrogation 
             elif model == "CLIP (Native)":
-                preliminary_interrogation = shared.interrogator.interrogate(p.init_images[0]) + ", "
+                preliminary_interrogation = shared.interrogator.interrogate(p.init_images[0]) 
+                # Filter prevents overexaggeration of tags due to interrogation models having similar results 
+                preliminary_interrogation = self.filter_words(preliminary_interrogation, interrogation) + ", "
+                interrogation += preliminary_interrogation 
             elif model == "CLIP (EXT)":
                 if self.clip_ext is not None:
                     for clip_model in clip_ext_model:
-                        preliminary_interrogation = self.clip_ext.image_to_prompt(p.init_images[0], clip_ext_mode, clip_model) + ", "
+                        preliminary_interrogation = self.clip_ext.image_to_prompt(p.init_images[0], clip_ext_mode, clip_model) 
                     if unload_clip_models_afterwords:
                         self.clip_ext.unload()
+                    # Filter prevents overexaggeration of tags due to interrogation models having similar results 
+                    preliminary_interrogation = self.filter_words(preliminary_interrogation, interrogation) + ", "
+                    interrogation += preliminary_interrogation 
             elif model == "WD (EXT)":
                 if self.wd_ext_utils is not None:
                     for wd_model in wd_ext_model:
@@ -296,11 +305,14 @@ class Script(scripts.Script):
                         tags_list = [tag for tag, conf in tags.items() if conf > wd_threshold]
                         if wd_underscore_fix:
                             tags_spaced = [self.replace_underscores(tag) for tag in tags_list]
-                            preliminary_interrogation = ", ".join(tags_spaced) + ", "
+                            preliminary_interrogation = ", ".join(tags_spaced) 
                         else:
-                            preliminary_interrogation += ", ".join(tags_list) + ", "
+                            preliminary_interrogation += ", ".join(tags_list)
                         if unload_wd_models_afterwords:
                             self.wd_ext_utils.interrogators[wd_model].unload()
+                        # Filter prevents overexaggeration of tags due to interrogation models having similar results 
+                        preliminary_interrogation = self.filter_words(preliminary_interrogation, interrogation) + ", "
+                        interrogation += preliminary_interrogation 
             
             # Filter prevents overexaggeration of tags due to interrogation models having similar results 
             interrogation += self.filter_words(preliminary_interrogation, interrogation)
