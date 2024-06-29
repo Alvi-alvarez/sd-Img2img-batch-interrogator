@@ -284,11 +284,6 @@ class Script(scripts.Script):
                 shared.state.skipped = False
                 continue
                 
-            # Check for stopping_generation
-            if state.stopping_generation:  
-                print("Stopping generation as requested.")
-                break
-                
             # Check for interruption
             if shared.state.interrupted:
                 print("Job interrupted. Ending process.")
@@ -312,10 +307,6 @@ class Script(scripts.Script):
                             print("Job skipped.")
                             shared.state.skipped = False
                             continue
-                        # Check for stopping_generation
-                        if state.stopping_generation:  
-                            print("Stopping generation as requested.")
-                            break
                         # Check for interruption
                         if shared.state.interrupted:
                             print("Job interrupted. Ending process.")
@@ -334,10 +325,6 @@ class Script(scripts.Script):
                             print("Job skipped.")
                             shared.state.skipped = False
                             continue
-                        # Check for stopping_generation
-                        if state.stopping_generation:  
-                            print("Stopping generation as requested.")
-                            break
                         # Check for interruption
                         if shared.state.interrupted:
                             print("Job interrupted. Ending process.")
