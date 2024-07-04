@@ -2,6 +2,7 @@ import gradio as gr
 import re
 from modules import scripts, deepbooru, script_callbacks, shared
 from modules.processing import process_images
+from modules.shared import state
 import sys
 import importlib.util
 
@@ -279,15 +280,15 @@ class Script(scripts.Script):
         
         for model in model_selection:
             # Check for skipped job
-            if shared.state.skipped:
+            if state.skipped:
                 print("Job skipped.")
-                shared.state.skipped = False
+                state.skipped = False
                 continue
                 
             # Check for interruption
-            if shared.state.interrupted:
+            if state.interrupted:
                 print("Job interrupted. Ending process.")
-                shared.state.interrupted = False
+                state.interrupted = False
                 break
                  
             # Should add the interrogators in the order determined by the model_selection list
@@ -307,14 +308,14 @@ class Script(scripts.Script):
                         job_no = state.job_no
                         job_count = state.job_count
                         # Check for skipped job
-                        if shared.state.skipped:
+                        if state.skipped:
                             print("Job skipped.")
-                            shared.state.skipped = False
+                            state.skipped = False
                             continue
                         # Check for interruption
-                        if shared.state.interrupted:
+                        if state.interrupted:
                             print("Job interrupted. Ending process.")
-                            shared.state.interrupted = False
+                            state.interrupted = False
                             break
                         preliminary_interrogation = self.clip_ext.image_to_prompt(p.init_images[0], clip_ext_mode, clip_model) 
                         if unload_clip_models_afterwords:
@@ -329,14 +330,15 @@ class Script(scripts.Script):
                 if self.wd_ext_utils is not None:
                     for wd_model in wd_ext_model:
                         # Check for skipped job
-                        if shared.state.skipped:
+                        # Check for skipped job
+                        if state.skipped:
                             print("Job skipped.")
-                            shared.state.skipped = False
+                            state.skipped = False
                             continue
                         # Check for interruption
-                        if shared.state.interrupted:
+                        if state.interrupted:
                             print("Job interrupted. Ending process.")
-                            shared.state.interrupted = False
+                            state.interrupted = False
                             break
                         rating, tags = self.wd_ext_utils.interrogators[wd_model].interrogate(p.init_images[0])
                         tags_list = [tag for tag, conf in tags.items() if conf > wd_threshold]
