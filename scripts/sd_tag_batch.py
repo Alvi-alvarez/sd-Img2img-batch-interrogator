@@ -302,6 +302,10 @@ class Script(scripts.Script):
             elif model == "CLIP (EXT)":
                 if self.clip_ext is not None:
                     for clip_model in clip_ext_model:
+                        # Clip-Ext resets state.job system during runtime...
+                        job = state.job
+                        job_no = state.job_no
+                        job_count = state.job_count
                         # Check for skipped job
                         if shared.state.skipped:
                             print("Job skipped.")
@@ -317,6 +321,10 @@ class Script(scripts.Script):
                             self.clip_ext.unload()
                         # Filter prevents overexaggeration of tags due to interrogation models having similar results 
                         interrogation += self.filter_words(preliminary_interrogation, interrogation) + ", "
+                        # Redeclare variables for state.job system
+                        state.job = job
+                        state.job_no = job_no
+                        state.job_count = job_count
             elif model == "WD (EXT)":
                 if self.wd_ext_utils is not None:
                     for wd_model in wd_ext_model:
