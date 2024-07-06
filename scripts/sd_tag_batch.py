@@ -183,6 +183,11 @@ class Script(scripts.ScriptBuiltinUI):
             return gr.Dropdown.update(choices=models if models else None)
         return gr.Dropdown.update(choices=None)
     
+    # Refresh the model_selection dropdown
+    def refresh_model_options(self):
+        new_options = self.get_initial_model_options()
+        return gr.Dropdown.update(choices=new_options)
+    
     # Required to parse information from a string that is between () or has :##.## suffix
     def remove_attention(self, words):
         # Define a regular expression pattern to match attention-related suffixes
@@ -310,10 +315,13 @@ class Script(scripts.ScriptBuiltinUI):
     def ui(self, is_img2img):
         tag_batch_ui = gr.Accordion(NAME, open=False)
         with tag_batch_ui:
-            model_selection = gr.Dropdown(choices=self.get_initial_model_options(), 
-                label="Interrogation Model(s):",
-                multiselect=True
-            )
+            with gr.Row():
+                model_selection = gr.Dropdown(
+                    choices=self.get_initial_model_options(), 
+                    label="Interrogation Model(s):",
+                    multiselect=True
+                )
+                refresh_models_button = gr.Button("🔄", elem_classes="tool")
             
             in_front = gr.Radio(
                 choices=["Prepend to prompt", "Append to prompt"], 
@@ -380,6 +388,8 @@ class Script(scripts.ScriptBuiltinUI):
             save_confirmation_button.click(self.update_save_confirmation_row_true, inputs=None, outputs=[save_confirmation_row])
             cancel_save_button.click(self.update_save_confirmation_row_false, inputs=None, outputs=[save_confirmation_row])
             save_custom_filter_button.click(self.save_custom_filter, inputs=custom_filter, outputs=[save_confirmation_row])
+            refresh_models_button.click(fn=self.refresh_model_options, inputs=[], outputs=[model_selection])
+)
                                     
         ui = [
             model_selection, debug_mode, in_front, prompt_weight_mode, prompt_weight, reverse_mode, exaggeration_mode, prompt_output, use_positive_filter, use_negative_filter, use_custom_filter, custom_filter, 
