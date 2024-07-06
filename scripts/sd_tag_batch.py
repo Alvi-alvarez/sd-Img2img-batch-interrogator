@@ -63,7 +63,9 @@ class Script(scripts.ScriptBuiltinUI):
     def load_clip_ext_module(cls):
         if is_interrogator_enabled('clip-interrogator-ext'):
             cls.clip_ext = import_module("clip-interrogator-ext", "extensions/clip-interrogator-ext/scripts/clip_interrogator_ext.py")
+            print(f"[{NAME} LOADER]: `clip-interrogator-ext` found...")
             return cls.clip_ext
+        print(f"[{NAME} LOADER]: `clip-interrogator-ext` NOT found!")
         return None
 
     # Initiates extenion check at startup for CLIP EXT
@@ -77,7 +79,9 @@ class Script(scripts.ScriptBuiltinUI):
         if is_interrogator_enabled('stable-diffusion-webui-wd14-tagger'):
             sys.path.append('extensions/stable-diffusion-webui-wd14-tagger')
             cls.wd_ext_utils = import_module("utils", "extensions/stable-diffusion-webui-wd14-tagger/tagger/utils.py")
+            print(f"[{NAME} LOADER]: `stable-diffusion-webui-wd14-tagger` found...")
             return cls.wd_ext_utils
+        print(f"[{NAME} LOADER]: `stable-diffusion-webui-wd14-tagger` NOT found!")
         return None
     
     # Initiates extenion check at startup for WD EXT
@@ -98,6 +102,22 @@ class Script(scripts.ScriptBuiltinUI):
     def debug_print(self, debug_mode, message):
         if debug_mode:
             print(f"[{NAME} DEBUG]: {message}")
+    
+    # Function to clean the custom_filter
+    def clean_string(self, input_string):
+        # Split the string into a list
+        items = input_string.split(',')
+        # Clean up each item: strip whitespace and convert to lowercase
+        cleaned_items = [item.strip() for item in items if item.strip()]
+        # Remove duplicates while preserving order
+        unique_items = []
+        seen = set()
+        for item in cleaned_items:
+            if item not in seen:
+                seen.add(item)
+                unique_items.append(item)
+        # Join the cleaned, unique items back into a string
+        return ', '.join(unique_items)
 
     # Tag filtering, removes negative tags from prompt
     def filter_words(self, prompt, negative):
@@ -149,7 +169,7 @@ class Script(scripts.ScriptBuiltinUI):
     # Function to load custom filter from file
     def load_custom_filter(self):
         try:
-            with open("extensions/sd-Img2img-batch-interrogator/custom_filter.txt", "r") as file:
+            with open("extensions/sd-Img2img-batch-interrogator/custom_filter.txt", "r", encoding="utf-8") as file:
                 custom_filter = file.read()
                 return custom_filter
         except Exception as error:
@@ -189,16 +209,15 @@ class Script(scripts.ScriptBuiltinUI):
     def remove_punctuation(self, text):
         # List of text emojis to preserve
         skipables = ["'s", "...", ":-)", ":)", ":-]", ":]", ":->", ":>", "8-)", "8)", ":-}", ":}", ":^)", "=]", "=)", ":-D", ":D", "8-D", "8D", "=D", "=3", "B^D", 
-            "c:", "C:", "x-D", "xD", "X-D", "XD", ":-))", ":))", ":-(", ":(", ":-c", ":c", ":-<", ":<", ":-[", ":[", ":-||", ":{", ":@", ":(", ";(", 
-            ":'-(", ":'(", ":=(", ":'-)", ":')", ">:(", ">:[", "D-':", "D:<", "D:", "D8", "D;", "D=", "DX", ":-O", ":O", ":-o", ":o", ":-0", ":0", "8-0", 
-            ">:O", "=O", "=o", "=0", ":-3", ":3", "=3", "x3", "X3", ">:3", ":-*", ":*", ":x", ";-)", ";)", "*-)", "*)", ";-]", ";]", ";^)", ";>", ":-,", 
-            ";D", ";3", ":-P", ":P", "X-P", "XP", "x-p", "xp", ":-p", ":p", ":-Þ", ":Þ", ":-þ", ":þ", ":-b", ":b", "d:", "=p", ">:P", ":-/", ":/", ":-.", 
-            ">:/", "=/", ":L", "=L", ":S", ":-|", ":|", ":$", "://)", "://3", ":-X", ":X", ":-#", ":#", ":-&", ":&", "O:-)", "O:)", "0:-3", 
-            "0:3", "0:-)", "0:)", "0;^)", ">:-)", ">:)", "}:-)", "}:)", "3:-)", "3:)", ">;-)", ">;)", ">:3", ">;3", "|;-)", "|-O", "B-)", ":-J", "#-)", 
-            "%-)", "%)", ":-###..", ":###..", "<:-|", "',:-|", "',:-l", ":E", "8-X", "8=X", "x-3", "x=3", "~:>", "@};-", "@}->--", "@}-;-'---", "@>-->--", 
-            "8====D", "8===D", "8=D", "3=D", "8=>", "8===D~~~", "*<|:-)", "</3", "<\3", "<3", "><>", "<><", "<*)))-{", "><(((*>", "\o/", "*\0/*", "o7", "v.v", 
-            "._.", "._.;", "QQ", "qq", "Qq", "X_X", "x_x", "+_+", "X_x", "x_X", "<_<", ">_>", "<.<", ">.>", "O_O", "o_o", "O-O", "o-o", "O_o", "o_O", ">.<", 
-            ">_<", "^5", "o/\o", ">_>^ ^<_<", "V.v.V"] # Maybe I should remove emojis with parenthesis () in them...
+            "c:", "C:", "x-D", "X-D", ":-))", ":))", ":-(", ":(", ":-c", ":c", ":-<", ":<", ":-[", ":[", ":-||", ":{", ":@", ":(", ";(", ":'-(", ":'(", ":=(", ":'-)", 
+            ":')", ">:(", ">:[", "D-':", "D:<", "D:", "D;", "D=", ":-O", ":O", ":-o", ":o", ":-0", ":0", "8-0", ">:O", "=O", "=o", "=0", ":-3", ":3", "=3", ">:3", 
+            ":-*", ":*", ":x", ";-)", ";)", "*-)", "*)", ";-]", ";]", ";^)", ";>", ":-,", ";D", ";3", ":-P", ":P", "X-P", "x-p", ":-p", ":p", ":-Þ", ":Þ", ":-þ", 
+            ":þ", ":-b", ":b", "d:", "=p", ">:P", ":-/", ":/", ":-.", ">:/", "=/", ":L", "=L", ":S", ":-|", ":|", ":$", "://)", "://3", ":-X", ":X", ":-#", ":#", 
+            ":-&", ":&", "O:-)", "O:)", "0:-3", "0:3", "0:-)", "0:)", "0;^)", ">:-)", ">:)", "}:-)", "}:)", "3:-)", "3:)", ">;-)", ">;)", ">:3", ">;3", "|;-)", "|-O", 
+            "B-)", ":-J", "#-)", "%-)", "%)", ":-###..", ":###..", "<:-|", "',:-|", "',:-l", ":E", "8-X", "8=X", "x-3", "x=3", "~:>", "@};-", "@}->--", "@}-;-'---", 
+            "@>-->--", "8====D", "8===D", "8=D", "3=D", "8=>", "8===D~~~", "*<|:-)", "</3", "<\3", "<3", "><>", "<><", "<*)))-{", "><(((*>", "\o/", "*\0/*", "o7", 
+            "v.v", "._.", "._.;", "X_X", "x_x", "+_+", "X_x", "x_X", "<_<", ">_>", "<.<", ">.>", "O_O", "o_o", "O-O", "o-o", "O_o", "o_O", ">.<", ">_<", "^5", "o/\o", 
+            ">_>^ ^<_<", "V.v.V"] # Maybe I should remove emojis with parenthesis () in them...
         # Temporarily replace text emojis with placeholders
         for i, noticables in enumerate(skipables):
             text = text.replace(noticables, f"SKIP_PLACEHOLDER_{i}")
@@ -328,6 +347,8 @@ class Script(scripts.ScriptBuiltinUI):
                     placeholder="Prompt content separated by commas. Warning ignores attention syntax, parentheses '()' and colon suffix ':XX.XX' are discarded.",
                     show_copy_button=True                        
                 )
+                # Button to remove duplicates and strip strange spacing
+                clean_custom_filter_button = gr.Button(value="Optimize Custom Filter")
                 # Button to load/save custom filter from file
                 with gr.Row():
                     load_custom_filter_button = gr.Button(value="Load Custom Filter")
@@ -336,7 +357,7 @@ class Script(scripts.ScriptBuiltinUI):
                 with save_confirmation_row:
                     with gr.Row():
                         cancel_save_button = gr.Button(value="Cancel")
-                        save_custom_filter_button = gr.Button(value="Save")
+                        save_custom_filter_button = gr.Button(value="Save", variant="stop")
                 
             experimental_tools = gr.Accordion("Experamental tools:", open=False)
             with experimental_tools:
@@ -354,6 +375,7 @@ class Script(scripts.ScriptBuiltinUI):
             unload_clip_models_button.click(self.unload_clip_models, inputs=None, outputs=None)
             unload_wd_models_button.click(self.unload_wd_models, inputs=None, outputs=None)
             prompt_weight_mode.change(fn=self.update_prompt_weight_visibility, inputs=[prompt_weight_mode], outputs=[prompt_weight])
+            clean_custom_filter_button.click(self.clean_string, inputs=custom_filter, outputs=custom_filter)
             load_custom_filter_button.click(self.load_custom_filter, inputs=None, outputs=custom_filter)
             save_confirmation_button.click(self.update_save_confirmation_row_true, inputs=None, outputs=[save_confirmation_row])
             cancel_save_button.click(self.update_save_confirmation_row_false, inputs=None, outputs=[save_confirmation_row])
@@ -410,20 +432,12 @@ class Script(scripts.ScriptBuiltinUI):
                 # Should add the interrogators in the order determined by the model_selection list
                 if model == "Deepbooru (Native)":
                     preliminary_interrogation = deepbooru.model.tag(p.init_images[0]) 
-                    self.debug_print(debug_mode, f"[Deepbooru (Native)]: {preliminary_interrogation}")
-                    # Filter prevents overexaggeration of tags due to interrogation models having similar results 
-                    if not exaggeration_mode:
-                        interrogation += f"{self.filter_words(preliminary_interrogation, interrogation)}, "
-                    else:
-                        interrogation += f"{preliminary_interrogation}, "
+                    self.debug_print(debug_mode, f"[Deepbooru (Native)]: [Result]: {preliminary_interrogation}")
+                    interrogation += preliminary_interrogation
                 elif model == "CLIP (Native)":
                     preliminary_interrogation = shared.interrogator.interrogate(p.init_images[0]) 
-                    self.debug_print(debug_mode, f"[CLIP (Native)]: {preliminary_interrogation}")
-                    # Filter prevents overexaggeration of tags due to interrogation models having similar results 
-                    if not exaggeration_mode:
-                        interrogation += f"{self.filter_words(preliminary_interrogation, interrogation)}, "
-                    else:
-                        interrogation += f"{preliminary_interrogation}, "
+                    self.debug_print(debug_mode, f"[CLIP (Native)]: [Result]: {preliminary_interrogation}")
+                    interrogation += preliminary_interrogation
                 elif model == "CLIP (EXT)":
                     if self.clip_ext is not None:
                         for clip_model in clip_ext_model:
@@ -444,12 +458,8 @@ class Script(scripts.ScriptBuiltinUI):
                             preliminary_interrogation = self.clip_ext.image_to_prompt(p.init_images[0], clip_ext_mode, clip_model) 
                             if unload_clip_models_afterwords:
                                 self.clip_ext.unload()
-                            self.debug_print(debug_mode, f"[CLIP (EXT)]: {preliminary_interrogation}")
-                            # Filter prevents overexaggeration of tags due to interrogation models having similar results 
-                            if not exaggeration_mode:
-                                interrogation += f"{self.filter_words(preliminary_interrogation, interrogation)}, "
-                            else:
-                                interrogation += f"{preliminary_interrogation}, "
+                            self.debug_print(debug_mode, f"[CLIP ({clip_model}:{clip_ext_mode})]: [Result]: {preliminary_interrogation}")
+                            interrogation += preliminary_interrogation
                             # Redeclare variables for state.job system
                             state.job = job
                             state.job_no = job_no
@@ -473,15 +483,18 @@ class Script(scripts.ScriptBuiltinUI):
                                 tags_spaced = [self.replace_underscores(tag) for tag in tags_list]
                                 preliminary_interrogation = ", ".join(tags_spaced) 
                             else:
-                                preliminary_interrogation += ", ".join(tags_list)
+                                preliminary_interrogation = ", ".join(tags_list)
                             if unload_wd_models_afterwords:
                                 self.wd_ext_utils.interrogators[wd_model].unload()
-                            self.debug_print(debug_mode, f"[WD (EXT)]: {preliminary_interrogation}")
-                            # Filter prevents overexaggeration of tags due to interrogation models having similar results 
-                            if not exaggeration_mode:
-                                interrogation += f"{self.filter_words(preliminary_interrogation, interrogation)}, "
-                            else:
-                                interrogation += f"{preliminary_interrogation}, "
+                            self.debug_print(debug_mode, f"[WD ({wd_model}:{wd_threshold})]: [Result]: {preliminary_interrogation}")
+                            self.debug_print(debug_mode, f"[WD ({wd_model}:{wd_threshold})]: [Ratings]: {rating}")
+                            interrogation += preliminary_interrogation
+                            
+            # Filter prevents overexaggeration of tags due to interrogation models having similar results 
+            if not exaggeration_mode:
+                interrogation = f"{self.clean_string(interrogation)}, "
+            else:
+                interrogation = f"{interrogation}, "
             
             # Remove duplicate prompt content from interrogator prompt
             if use_positive_filter:
