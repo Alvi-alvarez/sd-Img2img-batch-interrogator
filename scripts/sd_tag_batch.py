@@ -389,7 +389,6 @@ class Script(scripts.ScriptBuiltinUI):
             cancel_save_button.click(self.update_save_confirmation_row_false, inputs=None, outputs=[save_confirmation_row])
             save_custom_filter_button.click(self.save_custom_filter, inputs=custom_filter, outputs=[save_confirmation_row])
             refresh_models_button.click(fn=self.refresh_model_options, inputs=[], outputs=[model_selection])
-)
                                     
         ui = [
             model_selection, debug_mode, in_front, prompt_weight_mode, prompt_weight, reverse_mode, exaggeration_mode, prompt_output, use_positive_filter, use_negative_filter, use_custom_filter, custom_filter, 
