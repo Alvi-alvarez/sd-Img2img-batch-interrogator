@@ -501,9 +501,7 @@ class Script(scripts.ScriptBuiltinUI):
                             
             # Filter prevents overexaggeration of tags due to interrogation models having similar results 
             if not exaggeration_mode:
-                interrogation = f"{self.clean_string(interrogation)}, "
-            else:
-                interrogation = f"{interrogation}, "
+                interrogation = self.clean_string(interrogation)
             
             # Remove duplicate prompt content from interrogator prompt
             if use_positive_filter:
@@ -514,22 +512,22 @@ class Script(scripts.ScriptBuiltinUI):
             # Remove custom prompt content from interrogator prompt
             if use_custom_filter:
                 interrogation = self.filter_words(interrogation, custom_filter)
+
+            # Experimental tool for removing puncuations, but commas and a variety of emojis
+            if no_puncuation_mode:
+                interrogation = self.remove_punctuation(interrogation)
+            
+            # This will weight the interrogation, and also ensure that trailing commas to the interrogation are correctly placed.
+            if prompt_weight_mode:
+                interrogation = f"({interrogation.rstrip(', ')}:{prompt_weight}), "
+            else:
+                interrogation = f"({interrogation.rstrip(', ')}), "
             
             # Experimental reverse mode prep
             if not reverse_mode:
                 prompt = p.prompt
             else:
                 prompt = p.negative_prompt
-            
-            # This will weight the interrogation
-            if prompt_weight_mode:
-                interrogation = f"({interrogation}:{prompt_weight}), "
-            else:
-                interrogation = f"{interrogation}, "
-            
-            # Experimental tool for removing puncuations, but commas and a variety of emojis
-            if no_puncuation_mode:
-                interrogation = f"{self.remove_punctuation(interrogation)}, "
             
             # This will construct the prompt
             if prompt == "":
@@ -546,7 +544,7 @@ class Script(scripts.ScriptBuiltinUI):
                 Note: p.prompt, p.all_prompts[0], and prompts[0]
                     To get A1111 to record the updated prompt, p.all_prompts needs to be updated.
                     But, in process_batch to update the stable diffusion prompt, prompts[0] needs to be updated.
-                    prompts[0] are already parsed for network syntax,
+                    prompts[0] are already parsed for extra network syntax,
                 """
                 p.prompt = prompt
                 for i in range(len(p.all_prompts)):
