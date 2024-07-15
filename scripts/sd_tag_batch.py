@@ -442,11 +442,11 @@ class Script(scripts.ScriptBuiltinUI):
                 if model == "Deepbooru (Native)":
                     preliminary_interrogation = deepbooru.model.tag(p.init_images[0]) 
                     self.debug_print(debug_mode, f"[Deepbooru (Native)]: [Result]: {preliminary_interrogation}")
-                    interrogation += preliminary_interrogation
+                    interrogation += f"{preliminary_interrogation}, "
                 elif model == "CLIP (Native)":
                     preliminary_interrogation = shared.interrogator.interrogate(p.init_images[0]) 
                     self.debug_print(debug_mode, f"[CLIP (Native)]: [Result]: {preliminary_interrogation}")
-                    interrogation += preliminary_interrogation
+                    interrogation += f"{preliminary_interrogation}, "
                 elif model == "CLIP (EXT)":
                     if self.clip_ext is not None:
                         for clip_model in clip_ext_model:
@@ -468,7 +468,7 @@ class Script(scripts.ScriptBuiltinUI):
                             if unload_clip_models_afterwords:
                                 self.clip_ext.unload()
                             self.debug_print(debug_mode, f"[CLIP ({clip_model}:{clip_ext_mode})]: [Result]: {preliminary_interrogation}")
-                            interrogation += preliminary_interrogation
+                            interrogation += f"{preliminary_interrogation}, "
                             # Redeclare variables for state.job system
                             state.job = job
                             state.job_no = job_no
@@ -497,7 +497,7 @@ class Script(scripts.ScriptBuiltinUI):
                                 self.wd_ext_utils.interrogators[wd_model].unload()
                             self.debug_print(debug_mode, f"[WD ({wd_model}:{wd_threshold})]: [Result]: {preliminary_interrogation}")
                             self.debug_print(debug_mode, f"[WD ({wd_model}:{wd_threshold})]: [Ratings]: {rating}")
-                            interrogation += preliminary_interrogation
+                            interrogation += f"{preliminary_interrogation}, "
                             
             # Filter prevents overexaggeration of tags due to interrogation models having similar results 
             if not exaggeration_mode:
