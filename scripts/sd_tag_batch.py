@@ -279,9 +279,9 @@ class Script(scripts.ScriptBuiltinUI):
         else:
             return gr.Accordion.update(visible=False), gr.Dropdown.update()
     
-    # Depending on if prompt weight is enabled the slider will be dynamically visible
-    def update_prompt_weight_visibility(self, prompt_weight_mode):
-        return gr.Slider.update(visible=prompt_weight_mode)
+    # Depending on if slider visible is enabled making the slider will be dynamically visible
+    def update_slider_visibility(self, user_defined_visibility):
+        return gr.Slider.update(visible=user_defined_visibility)
     
     def update_save_confirmation_row_false(self):
         return gr.Accordion.update(visible=False)
@@ -313,8 +313,12 @@ class Script(scripts.ScriptBuiltinUI):
             print(f"Unloaded {unloaded_models} Tagger Model(s).")
     
     def ui(self, is_img2img):
-        tag_batch_ui = gr.Accordion(NAME, open=False)
-        with tag_batch_ui:
+        if not is_img2img:
+            return
+        #tag_batch_enabled = gr.Checkbox(label=NAME, value=False)
+        #tag_batch_ui = gr.Accordion(tag_batch_enabled, open=False)
+        #with tag_batch_ui:
+        with InputAccordion(False, label=NAME, elem_id="tag_batch_enabled") as tag_batch_enabled:
             with gr.Row():
                 model_selection = gr.Dropdown(
                     choices=self.get_initial_model_options(), 
@@ -340,8 +344,10 @@ class Script(scripts.ScriptBuiltinUI):
             wd_ext_accordion = gr.Accordion("WD EXT Options:", visible=False)
             with wd_ext_accordion:
                 wd_ext_model = gr.Dropdown(choices=[], value='wd-v1-4-moat-tagger.v2', label="WD Extension Model(s):", multiselect=True)
-                wd_threshold = gr.Slider(0.0, 1.0, value=0.35, step=0.01, label="Threshold")
+                wd_threshold = gr.Slider(0.0, 1.0, value=0.35, step=0.01, label="Tag Sensitivity Threshold")
                 wd_underscore_fix = gr.Checkbox(label="Remove Underscores from Tags", value=True)
+                wd_append_ratings = gr.Checkbox(label="Append Interpreted Rating(s)", value=False)
+                wd_ratings = gr.Slider(0.0, 1.0, value=0.5, step=0.01, label="Rating(s) Sensitivity Threshold", visible=False) 
                 unload_wd_models_afterwords = gr.Checkbox(label="Unload Tagger After Use", value=True)
                 unload_wd_models_button = gr.Button(value="Unload All Tagger Models")
                     
@@ -382,7 +388,8 @@ class Script(scripts.ScriptBuiltinUI):
             model_selection.change(fn=self.update_wd_ext_visibility, inputs=[model_selection], outputs=[wd_ext_accordion, wd_ext_model])
             unload_clip_models_button.click(self.unload_clip_models, inputs=None, outputs=None)
             unload_wd_models_button.click(self.unload_wd_models, inputs=None, outputs=None)
-            prompt_weight_mode.change(fn=self.update_prompt_weight_visibility, inputs=[prompt_weight_mode], outputs=[prompt_weight])
+            prompt_weight_mode.change(fn=self.update_slider_visibility, inputs=[prompt_weight_mode], outputs=[prompt_weight])
+            wd_append_ratings.change(fn=self.update_slider_visibility, inputs=[wd_append_ratings], outputs=[wd_ratings])
             clean_custom_filter_button.click(self.clean_string, inputs=custom_filter, outputs=custom_filter)
             load_custom_filter_button.click(self.load_custom_filter, inputs=None, outputs=custom_filter)
             save_confirmation_button.click(self.update_save_confirmation_row_true, inputs=None, outputs=[save_confirmation_row])
@@ -391,15 +398,20 @@ class Script(scripts.ScriptBuiltinUI):
             refresh_models_button.click(fn=self.refresh_model_options, inputs=[], outputs=[model_selection])
                                     
         ui = [
-            model_selection, debug_mode, in_front, prompt_weight_mode, prompt_weight, reverse_mode, exaggeration_mode, prompt_output, use_positive_filter, use_negative_filter, use_custom_filter, custom_filter, 
-            clip_ext_model, clip_ext_mode, wd_ext_model, wd_threshold, wd_underscore_fix, unload_clip_models_afterwords, unload_wd_models_afterwords, no_puncuation_mode
+            tag_batch_enabled, model_selection, debug_mode, in_front, prompt_weight_mode, prompt_weight, reverse_mode, exaggeration_mode, prompt_output, use_positive_filter, use_negative_filter, 
+            use_custom_filter, custom_filter, clip_ext_model, clip_ext_mode, wd_ext_model, wd_threshold, wd_underscore_fix, wd_append_ratings, wd_ratings, unload_clip_models_afterwords, unload_wd_models_afterwords, 
+            no_puncuation_mode
             ]
         return ui
 
     def process_batch(
-        self, p, model_selection, debug_mode, in_front, prompt_weight_mode, prompt_weight, reverse_mode, exaggeration_mode, prompt_output, use_positive_filter, use_negative_filter, use_custom_filter, custom_filter, 
-        clip_ext_model, clip_ext_mode, wd_ext_model, wd_threshold, wd_underscore_fix, unload_clip_models_afterwords, unload_wd_models_afterwords, no_puncuation_mode, batch_number, prompts, seeds, subseeds):
+        self, p, tag_batch_enabled, model_selection, debug_mode, in_front, prompt_weight_mode, prompt_weight, reverse_mode, exaggeration_mode, prompt_output, use_positive_filter, use_negative_filter, 
+        use_custom_filter, custom_filter, clip_ext_model, clip_ext_mode, wd_ext_model, wd_threshold, wd_underscore_fix, wd_append_ratings, wd_ratings, unload_clip_models_afterwords, unload_wd_models_afterwords, 
+        no_puncuation_mode, batch_number, prompts, seeds, subseeds):
             
+        if not tag_batch_enabled:
+            return
+        
         self.debug_print(debug_mode, f"process_batch called. batch_number={batch_number}, state.job_no={state.job_no}, state.job_count={state.job_count}, state.job_count={state.job}")
         if model_selection and not batch_number:
             # Calls reset_prompt_contamination to prep for multiple p.prompts
@@ -497,6 +509,13 @@ class Script(scripts.ScriptBuiltinUI):
                                 self.wd_ext_utils.interrogators[wd_model].unload()
                             self.debug_print(debug_mode, f"[WD ({wd_model}:{wd_threshold})]: [Result]: {preliminary_interrogation}")
                             self.debug_print(debug_mode, f"[WD ({wd_model}:{wd_threshold})]: [Ratings]: {rating}")
+                            if wd_append_ratings:
+                                qualifying_ratings = [key for key, value in rating.items() if value >= wd_ratings]
+                                if qualifying_ratings:
+                                    self.debug_print(wd_append_ratings, f"[WD ({wd_model}:{wd_threshold})]: Rating sensitivity set to {wd_ratings}, therefore rating is: {qualifying_ratings}")
+                                    preliminary_interrogation += ", " + ", ".join(qualifying_ratings)
+                                else:
+                                    self.debug_print(wd_append_ratings, f"[WD ({wd_model}:{wd_threshold})]: Rating sensitivity set to {wd_ratings}, unable to determine a rating! Perhaps the rating sensitivity is set too high.")
                             interrogation += f"{preliminary_interrogation}, "
                             
             # Filter prevents overexaggeration of tags due to interrogation models having similar results 
@@ -521,7 +540,7 @@ class Script(scripts.ScriptBuiltinUI):
             if prompt_weight_mode:
                 interrogation = f"({interrogation.rstrip(', ')}:{prompt_weight}), "
             else:
-                interrogation = f"{interrogation.rstrip(', ')}, "
+                interrogation = f"({interrogation.rstrip(', ')}), "
             
             # Experimental reverse mode prep
             if not reverse_mode:
