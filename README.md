@@ -18,11 +18,9 @@ For the script to run, make sure that script checkbox is checked and a interroga
 
 [`Interrogator results position`]: User can determine if the interrogation result is positioned at the beginning or end of the prompt.
 
-![](images/helperDoc4.png)
-
 ### CLIP EXT Options
 This menu will only appear if `CLIP (EXT)` is selected.
-![](images/helperDoc5.png)
+![](images/helperDoc4.png)
 [`CLIP Extension Model(s)`]: Users may select multiple interrogation models, interrogators will run in the order of user selection.
 
 [`CLIP Extension Mode`]: User may select what mode the CLIP extention interrogator will run in: `best`, `fast`, `classic`, or `negative`
@@ -35,7 +33,7 @@ This menu will only appear if `CLIP (EXT)` is selected.
 
 ### WD EXT Options
 This menu will only appear if `WD (EXT)` is selected.
-![](images/helperDoc6.png)
+![](images/helperDoc5.png)
 [`WD Extension Model(s)`]: Users may select multiple tagger models, taggers will run in the order of user selection.
 
 [`Tag Sensitivity Threshold`]: Tagger models will use `threshold` to determine if a suspected tag should be applied. Tags that do not meet the threshold will not be applied.
@@ -55,6 +53,7 @@ This menu will only appear if `WD (EXT)` is selected.
 
 ### Filtering Tools
 Users have the ability to filter content out of the interrogation prompts. 
+![](images/helperDoc6.png)
  - [`Filter Duplicate Positive Prompt Entries from Interrogation`]: Users can remove content from interrogations that was already added by the user in the prompt, this prevents exageration of prompt entries.
  - [`Filter Duplicate Negative Prompt Entries from Interrogation`]: Users can remove content from interrogations that is in the negative prompt, this prevents contradicting the negative prompt.
  - [`Filter Custom Prompt Entries from Interrogation`]: Users can create their own custom filter to remove content from interrogations without modifying the prompt or negative prompt.
