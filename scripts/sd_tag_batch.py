@@ -660,7 +660,7 @@ class Script(scripts.ScriptBuiltinUI):
             if prompt_weight_mode:
                 interrogation = f"({interrogation.rstrip(', ')}:{prompt_weight}), "
             else:
-                interrogation = f"({interrogation.rstrip(', ')}), "
+                interrogation = f"{interrogation.rstrip(', ')}, "
             
             # Experimental reverse mode prep
             if not reverse_mode:
