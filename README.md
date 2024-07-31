@@ -92,7 +92,7 @@ A bunch of tools that were added that are helpful with understanding the script,
 - [x] ~~Use CLIP extension interrogator~~
 - [x] ~~Use WD14 extention taggers~~
   - [x] ~~Add the option to append ratings to interrogation~~
-- [ ] Use e621 tagger (User should be able to do this themself by adding e621 to their WD14 extention)
+- [x] ~~Use e621 tagger~~ (User should be able to use e621 by adding e621 to their WD14 extention)
 - [ ] Make extention options dynamically added, instead of static visibility modification (so options could be applied to models individually)
   - [ ] Add the option to add model output to either prompt or negative prompt individually (Helpful for CLIP negative mode)
 - [x] ~~Add a find and remove option to the custom filter~~
