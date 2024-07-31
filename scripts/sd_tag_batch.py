@@ -672,8 +672,7 @@ class Script(scripts.ScriptBuiltinUI):
             if prompt == "":
                 prompt = interrogation
             elif in_front == "Append to prompt":
-                interrogation = f", {interrogation}"
-                prompt = f"{prompt}{interrogation}"
+                prompt = f"{prompt.rstrip(', ')}, {interrogation}"
             else:
                 prompt = f"{interrogation}{prompt}"
             
