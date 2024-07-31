@@ -7,7 +7,9 @@ script that runs the interrogator before processing each image
 
 ## Help Doc
 For the script to run, make sure that script checkbox is checked and a interrogator is selected.
+
 ![](images/helperDoc2.png)
+
 [`Interrogation Model(s)`]: The interrogators will run in the order of user selection.
 
 [`CLIP (EXT)`]: If user does not have a installed, and enabled version of `clip-interrogator-ext`, then `CLIP (EXT)` will not appear in the interrogator selection dropdown menu.
@@ -20,7 +22,9 @@ For the script to run, make sure that script checkbox is checked and a interroga
 
 ### CLIP EXT Options
 This menu will only appear if `CLIP (EXT)` is selected.
+
 ![](images/helperDoc4.png)
+
 [`CLIP Extension Model(s)`]: Users may select multiple interrogation models, interrogators will run in the order of user selection.
 
 [`CLIP Extension Mode`]: User may select what mode the CLIP extention interrogator will run in: `best`, `fast`, `classic`, or `negative`
@@ -33,7 +37,9 @@ This menu will only appear if `CLIP (EXT)` is selected.
 
 ### WD EXT Options
 This menu will only appear if `WD (EXT)` is selected.
+
 ![](images/helperDoc5.png)
+
 [`WD Extension Model(s)`]: Users may select multiple tagger models, taggers will run in the order of user selection.
 
 [`Tag Sensitivity Threshold`]: Tagger models will use `threshold` to determine if a suspected tag should be applied. Tags that do not meet the threshold will not be applied.
@@ -53,11 +59,15 @@ This menu will only appear if `WD (EXT)` is selected.
 
 ### Filtering Tools
 Users have the ability to filter content out of the interrogation prompts. 
+
 ![](images/helperDoc6.png)
+
  - [`Filter Duplicate Positive Prompt Entries from Interrogation`]: Users can remove content from interrogations that was already added by the user in the prompt, this prevents exageration of prompt entries.
  - [`Filter Duplicate Negative Prompt Entries from Interrogation`]: Users can remove content from interrogations that is in the negative prompt, this prevents contradicting the negative prompt.
  - [`Filter Custom Prompt Entries from Interrogation`]: Users can create their own custom filter to remove content from interrogations without modifying the prompt or negative prompt.
+
 ![](images/helperDoc7.png)
+
    - Note, if `Filter Custom Prompt Entries from Interrogation` is not enabled, options associated with it will be hidden
    - [`Custom Filter Prompt`]: Users can add their custom filter to the provided textbox. Please note, any attention syntax will be ignored, as any entry matching added entries are filtered.
    - [`Optimize Custom FIlter`]: User can optimize custom filter, optimize will remove duplicate entries, extra spaces, and empty entries.
@@ -66,7 +76,9 @@ Users have the ability to filter content out of the interrogation prompts.
 **WARNING: Saving the custom filter will overwrite previous custom filter save.**
 
  - [`Find & Replace User Defined Pairs in the Interrogation`]: Users can create their own custom find and replace lists to replace words and phrases in the interrogations without modifying the prompt or negative prompt.
+
 ![](images/helperDoc8.png)
+
    - Note, if `Find & Replace User Defined Pairs in the Interrogation` is not enabled, options associated with it will be hidden
    - [`Find`]: Users can add their custom phrases and words, seperated by comma, to find in the provided textbox.
    - [`Replace`]: Users can add their custom phrases and words replacements, seperated by comma, in the provided textbox. Leaving an entry blank will result in deleting the word from the interrogation prompt.
@@ -77,7 +89,9 @@ Users have the ability to filter content out of the interrogation prompts.
 
 ### Experimental Tools
 A bunch of tools that were added that are helpful with understanding the script, or offer greater variety with interrogation output.
+
 ![](images/helperDoc9.png)
+
  - [`Enable Debug Mode`]: DEBUG statements will be printed to console log.
  - [`Enable Reverse Mode`]: Interrogation will be added to the negative prompt.
  - [`Enable No Puncuation Mode`]: Interrogation will be filtered of all puncuations (except for a variety of emoji art).
