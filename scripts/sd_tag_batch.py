@@ -330,25 +330,43 @@ class Script(scripts.ScriptBuiltinUI):
         is_visible = "CLIP (EXT)" in model_selection
         if is_visible:
             clip_models = self.load_clip_models()
-            return gr.Accordion.update(visible=True), clip_models
+            try:
+                return gr.update(visible=True), clip_models
+            except:
+                return gr.Accordion.update(visible=True), clip_models
         else:
-            return gr.Accordion.update(visible=False), gr.Dropdown.update()
+            try:
+                return gr.update(visible=False), gr.update()
+            except:
+                return gr.Accordion.update(visible=False), gr.Dropdown.update()
     
     # Updates the visibility of group with input bool making it dynamically visible
     def update_group_visibility(self, user_defined_visibility):
-        return gr.Group.update(visible=user_defined_visibility)
+        try:
+            return gr.update(visible=user_defined_visibility)
+        except:
+            return gr.Group.update(visible=user_defined_visibility)
     
     # Updates the visibility of slider with input bool making it dynamically visible
     def update_slider_visibility(self, user_defined_visibility):
-        return gr.Slider.update(visible=user_defined_visibility)
+        try:
+            return gr.update(visible=user_defined_visibility)
+        except:
+            return gr.Slider.update(visible=user_defined_visibility)
     
     # Makes save confirmation dialague invisible
     def update_save_confirmation_row_false(self):
-        return gr.Accordion.update(visible=False)
+        try:
+            return gr.update(visible=False)
+        except:
+            return gr.Accordion.update(visible=False)
     
     # Makes save confirmation dialague visible
     def update_save_confirmation_row_true(self):
-        return gr.Accordion.update(visible=True)
+        try:  
+            return gr.update(visible=True)
+        except:
+            return gr.Accordion.update(visible=True)
     
     # Used for user visualization, (no longer used for parsing pairs)
     def update_parsed_pairs(self, custom_replace_find, custom_replace_replacements):
@@ -366,9 +384,15 @@ class Script(scripts.ScriptBuiltinUI):
         is_visible = "WD (EXT)" in model_selection
         if is_visible:
             wd_models = self.load_wd_models()
-            return gr.Accordion.update(visible=True), wd_models
+            try:
+                return gr.update(visible=True), wd_models
+            except:
+                return gr.Accordion.update(visible=True), wd_models
         else:
-            return gr.Accordion.update(visible=False), gr.Dropdown.update()
+            try:
+                return gr.update(visible=False), gr.update()
+            except:
+                return gr.Accordion.update(visible=False), gr.Dropdown.update()
     
     #Unloads CLIP Models
     def unload_clip_models(self):
